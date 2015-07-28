@@ -10,15 +10,53 @@
          http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc.xsd">
     
-    <mvc:annotation-driven/>
-	<context:component-scan base-package="platform.test,com.cn.platform.core.*"
+    <context:property-placeholder location="classpath*:/system.properties" 
+    	ignore-resource-not-found="true" ignore-unresolvable="true" />
+   <context:component-scan base-package="platform.test,com.cn.platform.core.*"
 		use-default-filters="false">
 		<context:include-filter type="annotation"
 			expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
-	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-	    <property name="prefix" value=""></property>
-		<property name="suffix" value=".jsp"></property>
-		<property name="order" value="2" />
+	<!-- 数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${jdbc.driver}" />
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="user" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialPoolSize" value="${connection_pools.initial_pool_size}" />
+		<property name="minPoolSize" value="${connection_pools.min_pool_size}" />
+		<property name="maxPoolSize" value="${connection_pools.max_pool_size}" />
+		<property name="maxIdleTime" value="${connection_pools.max_idle_time}" />
+		<property name="acquireIncrement" value="${connection_pools.acquire_increment}" />
+		<property name="checkoutTimeout" value="${connection_pools.checkout_timeout}" />
 	</bean>
+	<!-- session 工厂 -->
+	<bean id="sessionFactory"
+			class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+			<property name="dataSource">
+				<ref bean="dataSource" />
+			</property>
+			<property name="hibernateProperties">
+				<props>
+					<prop key="hibernate.show_sql">${hibernate.showSql}</prop>
+					<prop key="hibernate.format_sql">${hibernate.formatSql}</prop>
+					<prop key="hibernate.current_session_context_class">thread</prop>
+					<!-- update or create -->
+					<prop key="hibernate.default_schema">${jdbc.username}</prop> 
+					<prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl}</prop> 
+					<prop key="hibernate.generate_statistics">${hibernate.generateStatistics}</prop>
+					<prop key="hibernate.autoReconnect">true</prop>
+					<prop key="hibernate.connection.release_mode">after_transaction</prop>
+					<prop key="hibernate.cglib.use_reflection_optimizer">true</prop>
+					<prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
+				</props>
+			</property>
+			<property name="packagesToScan">
+			    <list>
+			        
+			    </list>
+		</property>
+	</bean>
+	
+	
 </beans>
